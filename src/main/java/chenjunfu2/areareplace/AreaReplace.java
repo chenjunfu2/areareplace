@@ -19,6 +19,7 @@ public class AreaReplace implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 
-		//LOGGER.info("Hello Fabric world!");
+		LOGGER.info("如果你在服务器后台上见到这句话，请卸载这个Mod，因为这个Mod并非用于服务端，它没有任何服务端功能");
+		LOGGER.info("If you see this message on the server backend, please uninstall this Mod, as it is not intended for the server side and has no server-side functionality.");
 	}
 }

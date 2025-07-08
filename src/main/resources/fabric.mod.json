@@ -3,13 +3,14 @@
 	"id": "areareplace",
 	"version": "${version}",
 	"name": "AreaReplace",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "A mod for area by area replacement blocks",
 	"authors": [
-		"Me!"
+		"chenjunfu2",
+		"Earthcomputer"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "NULL",
+		"sources": "https://github.com/chenjunfu2/areareplace"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/areareplace/icon.png",
