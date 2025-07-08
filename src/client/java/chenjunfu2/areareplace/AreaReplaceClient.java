@@ -1,18 +1,6 @@
-//package chenjunfu2.areareplace;
-//
-//import net.fabricmc.api.ClientModInitializer;
-//
-//public class AreaReplaceClient implements ClientModInitializer {
-//	@Override
-//	public void onInitializeClient() {
-//		// This entrypoint is suitable for setting up client-specific logic, such as rendering.
-//	}
-//}
-
 package chenjunfu2.areareplace;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -22,39 +10,27 @@ import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.command.argument.*;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.*;
 import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import net.minecraft.block.Block;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.text.Text;
 
 public class AreaReplaceClient implements ClientModInitializer
 {
 	public static final String MOD_ID = "areareplace";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-	
-	//private static final Map<ClientPlayerEntity, RegionReplacer> activeReplacers = new HashMap<>();
 	
 	private static final MinecraftClient client = MinecraftClient.getInstance();
 	private static RegionReplacer replacer = new RegionReplacer();
