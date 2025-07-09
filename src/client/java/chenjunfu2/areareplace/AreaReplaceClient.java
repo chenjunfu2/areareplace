@@ -469,11 +469,11 @@ class RegionReplacer {
 							}
 							return null;
 						}
-						showChunkLoad = false;//下次可以显示了
 						
 						if (isBreakBlock(world, pos))
 						{
 							player.sendMessage(Text.of(String.format("当前选择的方块为(%d,%d,%d)",x,y,z)), true);
+							showChunkLoad = false;//下次可以显示了
 							return pos;
 						}
 					}
