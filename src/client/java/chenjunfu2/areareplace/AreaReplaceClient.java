@@ -173,7 +173,7 @@ public class AreaReplaceClient implements ClientModInitializer
 							{
 								Double d = context.getArgument("radius",Double.class);
 								player.sendMessage(Text.literal(replacer.setNearbyDistance(d) ?
-										String.format("已设置目标方块操作范围为%f，默认值为4.0", d) : "设置失败，范围需要大于0且小等于20"));
+										String.format("已设置目标方块操作范围为%f，默认值为3.0", d) : "设置失败，范围需要大于0且小等于20"));
 							}
 							return 1;
 						})))
