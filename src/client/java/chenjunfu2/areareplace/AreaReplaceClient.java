@@ -6,6 +6,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -39,7 +40,16 @@ public class AreaReplaceClient implements ClientModInitializer
 	@Override
 	public void onInitializeClient() {
 		registerClientCommands();
+		registerClientDisconnect();
 		registerClientTickEvent();
+	}
+	
+	private void registerClientDisconnect()//断开连接后清理
+	{
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+			replacer.stop();
+			sync.setSyncOffHand(-1);
+		});
 	}
 	
 	private void registerClientCommands() {
@@ -86,6 +96,16 @@ public class AreaReplaceClient implements ClientModInitializer
 								{
 									replacer.stop();
 									player.sendMessage(Text.literal("已停止并取消替换任务"), false);
+								}
+								return 1;
+							}))
+					.then(ClientCommandManager.literal("restart")
+							.executes(context -> {
+								ClientPlayerEntity player = client.player;
+								if (player != null)
+								{
+									replacer.start();//重新调用一次，只会清理选择的方块，完成重启
+									player.sendMessage(Text.literal("已重启替换任务"), false);
 								}
 								return 1;
 							}))
@@ -230,17 +250,19 @@ class Sync
 	
 	public void tick(MinecraftClient client)
 	{
-		if(syncInv)
+		if(!syncInv)
 		{
-			if(syncRemTick <= 0)
-			{
-				syncOffHand(client.player);
-				syncRemTick = syncTick;
-			}
-			else
-			{
-				--syncRemTick;
-			}
+			return;
+		}
+		
+		if(syncRemTick <= 0)
+		{
+			syncOffHand(client.player);
+			syncRemTick = syncTick;
+		}
+		else
+		{
+			--syncRemTick;
 		}
 	}
 	
@@ -256,7 +278,8 @@ class RegionReplacer {
 	private boolean active = false;
 	private BlockPos currentTarget = null;
 	private BlockPos lastTarget = null;
-	private static double NEARBY_DISTANCE = 4.0;
+	private double NEARBY_DISTANCE = 3.0;
+	private boolean showChunkLoad = false;
 	
 	public BlockPos getPos1()
 	{
@@ -330,8 +353,23 @@ class RegionReplacer {
 		return pos1 != null && pos2 != null && sourceBlock != null && targetBlock != null;
 	}
 	
-	public void start() {
-		if (isValid()) {
+	private void clear()
+	{
+		pos1 = null;
+		pos2 = null;
+		sourceBlock = null;
+		targetBlock = null;
+		active = false;
+		currentTarget = null;
+		lastTarget = null;
+		//NEARBY_DISTANCE = 3.0;
+		showChunkLoad = false;
+	}
+	
+	public void start()
+	{
+		if (isValid())
+		{
 			active = true;
 			currentTarget = null;
 			lastTarget = null;
@@ -339,9 +377,7 @@ class RegionReplacer {
 	}
 	
 	public void stop() {
-		active = false;
-		currentTarget = null;
-		lastTarget = null;
+		clear();
 	}
 	
 	public void pause() {
@@ -352,7 +388,8 @@ class RegionReplacer {
 		return active;
 	}
 	
-	public static boolean isPlayerNearby(ClientPlayerEntity player, @NotNull BlockPos currentTarget) {
+	public boolean isPlayerNearby(ClientPlayerEntity player, @NotNull BlockPos currentTarget)
+	{
 		Box region = new Box(currentTarget, currentTarget);
 		return player.getBoundingBox().expand(NEARBY_DISTANCE).intersects(region);
 	}
@@ -419,9 +456,14 @@ class RegionReplacer {
 					ChunkPos chunkPos = new ChunkPos(pos);
 					if(world.getChunkManager().getChunk(chunkPos.x,chunkPos.z) == null)//判断是否已加载区块，否直接返回null
 					{
-						player.sendMessage(Text.of(String.format("目标方块未加载(%d,%d,%d)",x,y,z)), true);
+						if(!showChunkLoad)//防止一直提示
+						{
+							player.sendMessage(Text.of(String.format("目标方块未加载(%d,%d,%d)",x,y,z)), true);
+							showChunkLoad = true;//已经显示过，下次不要在显示了
+						}
 						return null;
 					}
+					showChunkLoad = false;//下次可以显示了
 					
 					if (isBreakBlock(world, pos))
 					{
