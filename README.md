@@ -13,6 +13,9 @@
 /areareplace stop</br>
 结束当前替换任务</br>
 </br>
+/areareplace restart</br>
+重启当前替换任务，可以重新从头选择目标方块</br>
+</br>
 /areareplace pause</br>
 暂停/恢复 当前替换任务</br>
 </br>
