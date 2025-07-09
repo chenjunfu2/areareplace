@@ -445,33 +445,60 @@ class RegionReplacer {
 		//end作为尾后迭代器，需要根据位移移动一次
 		BlockPos end = pos2.add(mov);
 		
+		boolean changeX = false;
+		boolean changeZ = false;
+		boolean changeY = false;
+		
 		//查找下一个方块
-		for (int y = beg.getY(); y != end.getY(); y += mov.getY())
+		while(true)
 		{
-			for (int x = beg.getX(); x != end.getX(); x += mov.getX())
+			for (int y = beg.getY(); y != end.getY(); y += mov.getY())
 			{
-				for (int z = beg.getZ(); z != end.getZ(); z += mov.getZ())
+				for (int x = beg.getX(); x != end.getX(); x += mov.getX())
 				{
-					BlockPos pos = new BlockPos(x, y, z);
-					ChunkPos chunkPos = new ChunkPos(pos);
-					if(world.getChunkManager().getChunk(chunkPos.x,chunkPos.z) == null)//判断是否已加载区块，否直接返回null
+					for (int z = beg.getZ(); z != end.getZ(); z += mov.getZ())
 					{
-						if(!showChunkLoad)//防止一直提示
+						BlockPos pos = new BlockPos(x, y, z);
+						ChunkPos chunkPos = new ChunkPos(pos);
+						if(world.getChunkManager().getChunk(chunkPos.x,chunkPos.z) == null)//判断是否已加载区块，否直接返回null
 						{
-							player.sendMessage(Text.of(String.format("目标方块未加载(%d,%d,%d)",x,y,z)), true);
-							showChunkLoad = true;//已经显示过，下次不要在显示了
+							if(!showChunkLoad)//防止一直提示
+							{
+								player.sendMessage(Text.of(String.format("目标方块未加载(%d,%d,%d)",x,y,z)), true);
+								showChunkLoad = true;//已经显示过，下次不要在显示了
+							}
+							return null;
 						}
-						return null;
+						showChunkLoad = false;//下次可以显示了
+						
+						if (isBreakBlock(world, pos))
+						{
+							player.sendMessage(Text.of(String.format("当前选择的方块为(%d,%d,%d)",x,y,z)), true);
+							return pos;
+						}
 					}
-					showChunkLoad = false;//下次可以显示了
-					
-					if (isBreakBlock(world, pos))
-					{
-						player.sendMessage(Text.of(String.format("当前选择的方块为(%d,%d,%d)",x,y,z)), true);
-						return pos;
+					if(!changeZ && lastTarget != null)
+					{//如果这里Z到底了，并且beg是lastTarget来的，说明要从下一排开始了，重置beg的Z为pos1的Z
+						beg = new BlockPos(beg.getX(),beg.getY(),pos1.getZ());
+						changeZ = true;
 					}
 				}
+				if(!changeX && lastTarget != null)
+				{
+					//同理，这里X到底了，并且beg是lastTarget来的，说明要从下一排开始了，重置beg的X为pos1的X
+					beg = new BlockPos(pos1.getX(),beg.getY(),beg.getZ());
+					changeX = true;
+				}
 			}
+			if(!changeY && lastTarget != null)
+			{
+				//同理，这里Y到底了，并且beg是lastTarget来的，说明要从头开始了，重置beg的X为pos1的Y
+				beg = new BlockPos(beg.getX(),pos1.getY(),beg.getZ());
+				changeY = true;
+				continue;//没有goto只能这样替代了
+			}
+			
+			break;//正常只执行一次
 		}
 		
 		return null;
